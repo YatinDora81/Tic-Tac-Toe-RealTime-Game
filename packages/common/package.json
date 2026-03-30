@@ -1,0 +1,20 @@
+{
+  "name": "@repo/common",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./types/*": "./src/types/*.ts",
+    "./schemas/*": "./src/schemas/*.ts",
+    "./constants/*": "./src/constants/*.ts",
+    "./game-logic/*": "./src/game-logic/*.ts",
+    "./utils/*": "./src/utils/*.ts"
+  },
+  "dependencies": {
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "*",
+    "typescript": "5.9.2"
+  }
+}

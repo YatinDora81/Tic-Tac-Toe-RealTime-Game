@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum GameStatus {
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum GameMode {
+  CLASSIC
+  TIMED
+}
+
+enum GameResult {
+  X_WIN
+  O_WIN
+  DRAW
+  FORFEIT
+  TIMEOUT
+}
+
+enum Symbol {
+  X
+  O
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+
+  stats PlayerStats?
+  games GamePlayer[]
+  moves Move[]
+
+  @@index([email])
+}
+
+model GuestPlayer {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+
+  games GamePlayer[]
+  moves Move[]       @relation("guestMoves")
+}
+
+model PlayerStats {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  wins          Int      @default(0)
+  losses        Int      @default(0)
+  draws         Int      @default(0)
+  currentStreak Int      @default(0)
+  maxStreak     Int      @default(0)
+  rating        Int      @default(1000)
+  gamesPlayed   Int      @default(0)
+  updatedAt     DateTime @updatedAt
+
+  @@index([rating(sort: Desc)])
+  @@index([userId])
+}
+
+model GamePlayer {
+  id      String       @id @default(uuid())
+  gameId  String
+  game    Game         @relation(fields: [gameId], references: [id])
+  userId  String?
+  user    User?        @relation(fields: [userId], references: [id])
+  guestId String?
+  guest   GuestPlayer? @relation(fields: [guestId], references: [id])
+  symbol  Symbol
+
+  @@unique([gameId, symbol])
+  @@index([gameId])
+  @@index([userId])
+  @@index([guestId])
+}
+
+model Game {
+  id       String      @id @default(uuid())
+  roomCode String      @unique
+  status   GameStatus  @default(WAITING)
+  mode     GameMode    @default(CLASSIC)
+  result   GameResult?
+
+  players GamePlayer[]
+
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  moves Move[]
+
+  @@index([status])
+  @@index([roomCode])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Move {
+  id     Int    @id @default(autoincrement())
+  gameId String
+  game   Game   @relation(fields: [gameId], references: [id])
+
+  playerId      String?
+  player        User?        @relation(fields: [playerId], references: [id])
+  playerGuestId String?
+  playerGuest   GuestPlayer? @relation("guestMoves", fields: [playerGuestId], references: [id])
+
+  position   Int
+  symbol     Symbol
+  moveNumber Int
+  createdAt  DateTime @default(now())
+
+  @@index([gameId, moveNumber])
+  @@index([playerId])
+  @@index([playerGuestId])
+}
