@@ -12,12 +12,14 @@
     "@repo/typescript-config": "*",
     "@repo/common": "*",
     "db": "*",
+    "cors": "^2.8.5",
     "express": "^4.21.0",
     "jose": "^6.0.0",
     "ws": "^8.18.0"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/ws": "^8.18.0"
   },

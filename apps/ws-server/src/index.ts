@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import { createServer } from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import { jwtVerify } from "jose";
@@ -22,6 +23,11 @@ async function authenticate(url: string): Promise<AuthTokenPayload | null> {
 }
 
 const app = express();
+
+app.use(cors({
+  origin: process.env.CORS_ORIGINS?.split(",") ?? ["http://localhost:3000"],
+  credentials: true,
+}));
 
 app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });

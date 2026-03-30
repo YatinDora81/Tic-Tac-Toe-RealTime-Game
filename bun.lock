@@ -61,6 +61,7 @@
       "dependencies": {
         "@repo/common": "*",
         "@repo/typescript-config": "*",
+        "cors": "^2.8.5",
         "db": "*",
         "express": "^4.21.0",
         "jose": "^6.0.0",
@@ -68,6 +69,7 @@
       },
       "devDependencies": {
         "@types/bun": "latest",
+        "@types/cors": "^2.8.17",
         "@types/express": "^5.0.0",
         "@types/ws": "^8.18.0",
       },
