@@ -309,8 +309,29 @@ class Game {
 
     const isPlayerX = room.playerX.id === userId && room.playerX.isGuest === isGuest;
     const isPlayerO = room.playerO?.id === userId && room.playerO?.isGuest === isGuest;
-    if (isPlayerX || isPlayerO) {
-      this.getOrCreateUser(userId, playerName, isGuest).roomCode = roomCode;
+    // Also match by ID only (covers edge cases where isGuest flag differs on reconnect)
+    const isPlayerXById = room.playerX.id === userId;
+    const isPlayerOById = room.playerO?.id === userId;
+    if (isPlayerX || isPlayerO || isPlayerXById || isPlayerOById) {
+      const session = this.getOrCreateUser(userId, playerName, isGuest);
+      session.roomCode = roomCode;
+      // Cancel any pending forfeit timer for this player
+      const forfeitTimer = room.forfeitTimers.get(key);
+      if (forfeitTimer) {
+        clearTimeout(forfeitTimer);
+        room.forfeitTimers.delete(key);
+      }
+      // Notify opponent that player reconnected
+      const reconnectedSymbol = (isPlayerX || isPlayerXById) ? "X" : "O";
+      const opponentKey = reconnectedSymbol === "X"
+        ? room.playerO ? this.playerKey(room.playerO) : null
+        : this.playerKey(room.playerX);
+      if (opponentKey) {
+        this.sendToUser(opponentKey, {
+          type: "player_joined",
+          data: { name: playerName, symbol: reconnectedSymbol },
+        });
+      }
       this.sendToUser(key, this.buildGameState(room));
       return;
     }
@@ -403,6 +424,7 @@ class Game {
 
     let xStats: any = null;
     let oStats: any = null;
+    let resolvedWinnerId: string | null = null;
 
     try {
       await db.updateGameEnd(room.gameId, { result, status: "COMPLETED" });
@@ -436,7 +458,8 @@ class Game {
           result === "X_WIN" ||
           ((result === "FORFEIT" || result === "TIMEOUT") &&
             room.currentTurn === "O");
-        const winnerId = xWins ? room.playerX.id : room.playerO.id;
+        resolvedWinnerId = xWins ? room.playerX.id : room.playerO.id;
+        const winnerId = resolvedWinnerId;
         const loserId = xWins ? room.playerO.id : room.playerX.id;
         const winReg = xWins ? xReg : oReg;
         const loseReg = xWins ? oReg : xReg;
@@ -490,7 +513,7 @@ class Game {
       type: "game_over",
       data: {
         result,
-        winnerId: null,
+        winnerId: resolvedWinnerId,
         board: [...room.board] as number[],
         stats: { playerX: fmt(xStats), playerO: fmt(oStats) },
       },

@@ -25,7 +25,7 @@ export function GuestForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-1.5">Display Name</label>
+        <label className="block text-sm font-medium text-white/40 mb-1.5">Display Name</label>
         <input
           type="text"
           value={name}
@@ -33,7 +33,7 @@ export function GuestForm() {
           required
           minLength={2}
           maxLength={20}
-          className="w-full rounded-xl bg-gray-800/80 px-4 py-3 text-white border border-gray-700 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 focus:outline-none transition-all placeholder:text-gray-600"
+          className="w-full rounded-xl glass-input px-4 py-3 text-white focus:outline-none placeholder:text-white/20"
           placeholder="Pick a name"
         />
       </div>
@@ -41,7 +41,7 @@ export function GuestForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-emerald-600 py-3 font-semibold text-white hover:bg-emerald-500 transition-all disabled:opacity-50 shadow-lg shadow-emerald-600/20"
+        className="w-full rounded-xl btn-glow-emerald py-3 font-semibold text-white disabled:opacity-50"
       >
         {loading ? "Joining..." : "Join as Guest"}
       </button>

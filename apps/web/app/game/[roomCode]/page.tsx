@@ -35,16 +35,11 @@ export default function GamePage() {
   // Connect if not already connected
   useEffect(() => {
     if (!isConnected && user) {
-      connect();
+      connect().catch(() => {});
     }
   }, [isConnected, user, connect]);
 
-  // Send join_game when connected — this handles all flows:
-  // - Create Room: creator joins their own room for the first time via WS
-  // - Join Room: second player joins with the room code
-  // - Play Random: both players navigate here after match, each sends join_game
-  // - Page refresh / URL paste: reconnect to existing game
-  // The server handles duplicates gracefully (creator rejoining just gets game state back)
+  // Send join_game when connected
   useEffect(() => {
     if (isConnected && pageRoomCode && !joinSentRef.current) {
       joinSentRef.current = true;
@@ -73,8 +68,8 @@ export default function GamePage() {
       <main className="mx-auto max-w-lg px-4 py-8">
         {/* Room code display */}
         <div className="mb-6 text-center">
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Room Code</p>
-          <p className="text-2xl font-mono font-bold tracking-widest text-gray-300">{pageRoomCode}</p>
+          <p className="text-xs text-white/25 uppercase tracking-wider">Room Code</p>
+          <p className="text-2xl font-mono font-bold tracking-widest text-gradient-blue">{pageRoomCode}</p>
         </div>
 
         {/* Player info */}
@@ -121,6 +116,7 @@ export default function GamePage() {
             board={boardData}
             onMove={makeMove}
             disabled={!isMyTurn || !isGameActive || !!gameOver}
+            iWon={gameOver ? gameOver.winnerId === user.id : null}
           />
         </div>
 
@@ -131,16 +127,16 @@ export default function GamePage() {
 
         {/* Game over stats */}
         {gameOver && myStats && (
-          <div className="mb-6 rounded-xl bg-gray-900 p-4 border border-gray-800">
-            <h3 className="text-sm font-medium text-gray-400 mb-3">Updated Stats</h3>
+          <div className="mb-6 rounded-xl glass-strong p-4">
+            <h3 className="text-sm font-medium text-white/40 mb-3">Updated Stats</h3>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-gray-500">Your Rating</p>
+                <p className="text-white/25">Your Rating</p>
                 <p className="font-mono text-lg text-emerald-400">{myStats.rating}</p>
               </div>
               <div>
-                <p className="text-gray-500">Win Streak</p>
-                <p className="font-mono text-lg text-orange-400">{myStats.currentStreak}</p>
+                <p className="text-white/25">Win Streak</p>
+                <p className="font-mono text-lg text-amber-400">{myStats.currentStreak}</p>
               </div>
             </div>
           </div>
@@ -153,7 +149,7 @@ export default function GamePage() {
               leaveGame();
               router.push("/");
             }}
-            className="flex-1 rounded-lg bg-gray-800 py-3 font-medium text-gray-300 hover:text-white transition-colors"
+            className="flex-1 rounded-xl glass glass-hover py-3 font-medium text-white/50 hover:text-white transition-all"
           >
             {gameOver ? "Back to Lobby" : "Leave Game"}
           </button>

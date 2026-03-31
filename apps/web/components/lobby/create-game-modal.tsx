@@ -28,29 +28,29 @@ export function CreateGameModal({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-2xl bg-gray-900 p-6 border border-gray-800">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
+      <div className="w-full max-w-sm rounded-2xl glass-strong p-6">
         <h2 className="text-lg font-bold text-white mb-4">Create Game</h2>
 
         <div className="space-y-3 mb-6">
-          <label className="block text-sm text-gray-400">Game Mode</label>
+          <label className="block text-sm text-white/40">Game Mode</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => setMode("CLASSIC")}
-              className={`rounded-lg py-3 text-sm font-medium transition-colors border ${
+              className={`rounded-xl py-3 text-sm font-medium transition-all ${
                 mode === "CLASSIC"
-                  ? "border-blue-500 bg-blue-600/20 text-blue-400"
-                  : "border-gray-700 bg-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+                  : "glass glass-hover text-white/40 hover:text-white/70"
               }`}
             >
               Classic
             </button>
             <button
               onClick={() => setMode("TIMED")}
-              className={`rounded-lg py-3 text-sm font-medium transition-colors border ${
+              className={`rounded-xl py-3 text-sm font-medium transition-all ${
                 mode === "TIMED"
-                  ? "border-orange-500 bg-orange-600/20 text-orange-400"
-                  : "border-gray-700 bg-gray-800 text-gray-400 hover:text-white"
+                  ? "bg-amber-500/20 border border-amber-500/40 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.15)]"
+                  : "glass glass-hover text-white/40 hover:text-white/70"
               }`}
             >
               Timed (30s)
@@ -63,14 +63,14 @@ export function CreateGameModal({ onClose }: { onClose: () => void }) {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 rounded-lg bg-gray-800 py-2.5 text-sm text-gray-400 hover:text-white transition-colors"
+            className="flex-1 rounded-xl glass glass-hover py-2.5 text-sm text-white/40 hover:text-white transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleCreate}
             disabled={loading}
-            className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="flex-1 rounded-xl btn-glow-blue py-2.5 text-sm font-medium text-white disabled:opacity-50"
           >
             {loading ? "Creating..." : "Create"}
           </button>

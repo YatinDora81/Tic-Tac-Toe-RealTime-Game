@@ -7,7 +7,7 @@ type MessageHandler = (message: any) => void;
 
 interface SocketContextValue {
   isConnected: boolean;
-  connect: () => void;
+  connect: () => Promise<void>;
   disconnect: () => void;
   sendMessage: (type: string, payload: any) => void;
   onMessage: (handler: MessageHandler) => () => void;
@@ -22,62 +22,80 @@ export function SocketProvider({ children }: { children: ReactNode }) {
   const reconnectRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reconnectAttemptRef = useRef(0);
 
-  const connect = useCallback(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    // Close stale socket if exists but not open
-    if (wsRef.current) {
-      if (wsRef.current.readyState === WebSocket.OPEN) return;
-      wsRef.current.onclose = null;
-      wsRef.current.onerror = null;
-      wsRef.current.onmessage = null;
-      wsRef.current.onopen = null;
-      wsRef.current = null;
-    }
-
-    reconnectAttemptRef.current = 0;
-    const ws = new WebSocket(`${WS_URL}?token=${token}`);
-
-    ws.onopen = () => {
-      if (wsRef.current === ws) {
-        setIsConnected(true);
-        reconnectAttemptRef.current = 0;
+  const connect = useCallback((): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        reject(new Error("No auth token"));
+        return;
       }
-    };
 
-    ws.onmessage = (event) => {
-      try {
-        const message = JSON.parse(event.data);
-        handlersRef.current.forEach((handler) => handler(message));
-      } catch {
-        // ignore invalid messages
+      // Already connected
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        resolve();
+        return;
       }
-    };
 
-    ws.onclose = () => {
-      // Only handle if this is still the active socket
-      if (wsRef.current !== ws) return;
-
-      setIsConnected(false);
-      wsRef.current = null;
-
-      // Auto-reconnect with exponential backoff
-      const attempt = reconnectAttemptRef.current;
-      if (attempt < 5) {
-        const delay = Math.min(1000 * Math.pow(2, attempt), 16000);
-        reconnectRef.current = setTimeout(() => {
-          reconnectAttemptRef.current++;
-          connect();
-        }, delay);
+      // Close stale socket if exists but not open
+      if (wsRef.current) {
+        wsRef.current.onclose = null;
+        wsRef.current.onerror = null;
+        wsRef.current.onmessage = null;
+        wsRef.current.onopen = null;
+        wsRef.current = null;
       }
-    };
 
-    ws.onerror = () => {
-      // onclose will fire after this
-    };
+      reconnectAttemptRef.current = 0;
+      const ws = new WebSocket(`${WS_URL}?token=${token}`);
+      let settled = false;
 
-    wsRef.current = ws;
+      ws.onopen = () => {
+        if (wsRef.current === ws) {
+          setIsConnected(true);
+          reconnectAttemptRef.current = 0;
+        }
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const message = JSON.parse(event.data);
+          handlersRef.current.forEach((handler) => handler(message));
+        } catch {
+          // ignore invalid messages
+        }
+      };
+
+      ws.onclose = () => {
+        // Only handle if this is still the active socket
+        if (wsRef.current !== ws) return;
+
+        setIsConnected(false);
+        wsRef.current = null;
+
+        // Auto-reconnect with exponential backoff
+        const attempt = reconnectAttemptRef.current;
+        if (attempt < 5) {
+          const delay = Math.min(1000 * Math.pow(2, attempt), 16000);
+          reconnectRef.current = setTimeout(() => {
+            reconnectAttemptRef.current++;
+            connect().catch(() => {});
+          }, delay);
+        }
+      };
+
+      ws.onerror = () => {
+        if (!settled) {
+          settled = true;
+          reject(new Error("Connection failed"));
+        }
+      };
+
+      wsRef.current = ws;
+    });
   }, []);
 
   const disconnect = useCallback(() => {

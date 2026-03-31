@@ -9,9 +9,10 @@ interface GameBoardProps {
   board: number[];
   onMove: (position: number) => void;
   disabled: boolean;
+  iWon: boolean | null; // true = won, false = lost, null = game not over
 }
 
-export function GameBoard({ board, onMove, disabled }: GameBoardProps) {
+export function GameBoard({ board, onMove, disabled, iWon }: GameBoardProps) {
   const winResult = useMemo(() => checkWinner(board as Board), [board]);
   const winCells = new Set(winResult.winLine ?? []);
 
@@ -25,6 +26,7 @@ export function GameBoard({ board, onMove, disabled }: GameBoardProps) {
           onClick={onMove}
           disabled={disabled}
           isWinCell={winCells.has(index)}
+          iWon={iWon}
         />
       ))}
     </div>

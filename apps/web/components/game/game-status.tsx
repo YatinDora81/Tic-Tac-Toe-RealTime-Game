@@ -22,29 +22,29 @@ export function GameStatus({ gameState, mySymbol, gameOver, userId, opponentLeft
     const { result, winnerId } = gameOver;
     const iWon = winnerId === userId;
     const label = resultLabel(result, iWon);
-    const color = result === "DRAW" ? "text-yellow-400" : iWon ? "text-emerald-400" : "text-red-400";
+    const color = result === "DRAW" ? "text-amber-400" : iWon ? "text-emerald-400" : "text-rose-400";
     return <p className={`text-xl font-bold ${color}`}>{label}</p>;
   }
 
   if (opponentLeft) {
-    return <p className="text-lg text-orange-400">Opponent disconnected, waiting...</p>;
+    return <p className="text-lg text-amber-400/80">Opponent disconnected, waiting...</p>;
   }
 
   if (!gameState) {
-    return <p className="text-lg text-gray-400">Waiting for opponent...</p>;
+    return <p className="text-lg text-white/40">Waiting for opponent...</p>;
   }
 
   if (gameState.status === "WAITING") {
-    return <p className="text-lg text-gray-400">Waiting for opponent to join...</p>;
+    return <p className="text-lg text-white/40">Waiting for opponent to join...</p>;
   }
 
   if (!mySymbol) {
-    return <p className="text-lg text-gray-400">Joining game...</p>;
+    return <p className="text-lg text-white/40">Joining game...</p>;
   }
 
   const isMyTurn = gameState.currentTurn === mySymbol;
   return (
-    <p className={`text-lg font-medium ${isMyTurn ? "text-emerald-400" : "text-gray-400"}`}>
+    <p className={`text-lg font-medium ${isMyTurn ? "text-emerald-400" : "text-white/40"}`}>
       {isMyTurn ? "Your turn" : "Opponent's turn"}
     </p>
   );

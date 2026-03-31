@@ -18,13 +18,12 @@ interface ActiveGame {
 
 export function PlayOptions() {
   const router = useRouter();
-  const { connect, isConnected } = useSocket();
+  const { isConnected } = useSocket();
   const { autoMatch, roomCode, matchmaking, leaveGame, setRoomAndSymbol } = useGame();
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [activeGame, setActiveGame] = useState<ActiveGame | null>(null);
   const [loadingActive, setLoadingActive] = useState(true);
-  const pendingAction = useRef<(() => void) | null>(null);
 
   // Check for active game on mount
   useEffect(() => {
@@ -33,23 +32,6 @@ export function PlayOptions() {
       .catch(() => {})
       .finally(() => setLoadingActive(false));
   }, []);
-
-  // Execute pending action once connected
-  useEffect(() => {
-    if (isConnected && pendingAction.current) {
-      pendingAction.current();
-      pendingAction.current = null;
-    }
-  }, [isConnected]);
-
-  function doWhenConnected(action: () => void) {
-    if (isConnected) {
-      action();
-    } else {
-      pendingAction.current = action;
-      connect();
-    }
-  }
 
   // Navigate to game when room code is set (from matchmaking)
   useEffect(() => {
@@ -63,21 +45,33 @@ export function PlayOptions() {
     router.push(`/game/${activeGame.roomCode}`);
   }
 
+  const disabled = !isConnected;
+
   return (
     <div className="space-y-4">
+      {/* Connection status */}
+      {!isConnected && (
+        <div className="glass rounded-xl p-3 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/10 border-t-indigo-400" />
+            <p className="text-sm text-white/40">Connecting to server...</p>
+          </div>
+        </div>
+      )}
+
       {/* Resume Game Banner */}
       {!loadingActive && activeGame && (
-        <div className="rounded-xl border border-yellow-600/30 bg-yellow-600/10 p-4">
+        <div className="rounded-xl glass border-amber-500/20 bg-amber-500/5 p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-yellow-400">You have an active game</p>
-              <p className="text-xs text-yellow-600 mt-0.5">
+              <p className="text-sm font-medium text-amber-400">You have an active game</p>
+              <p className="text-xs text-amber-500/60 mt-0.5">
                 Room {activeGame.roomCode} &middot; {activeGame.mode} &middot; {activeGame.status === "WAITING" ? "Waiting for opponent" : "In progress"}
               </p>
             </div>
             <button
               onClick={handleResume}
-              className="rounded-lg bg-yellow-600 px-4 py-2 text-sm font-semibold text-white hover:bg-yellow-500 transition-all"
+              className="rounded-lg bg-amber-500/20 border border-amber-500/30 px-4 py-2 text-sm font-semibold text-amber-400 hover:bg-amber-500/30 transition-all"
             >
               Resume
             </button>
@@ -87,22 +81,25 @@ export function PlayOptions() {
 
       <div className="grid grid-cols-2 gap-4">
         <button
-          onClick={() => doWhenConnected(() => setShowCreate(true))}
-          className="rounded-xl bg-blue-600 py-4 font-semibold text-white hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20"
+          onClick={() => setShowCreate(true)}
+          disabled={disabled}
+          className="rounded-xl btn-glow-blue py-4 font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
         >
           Create Room
         </button>
         <button
-          onClick={() => doWhenConnected(() => setShowJoin(true))}
-          className="rounded-xl bg-purple-600 py-4 font-semibold text-white hover:bg-purple-500 transition-all shadow-lg shadow-purple-600/20"
+          onClick={() => setShowJoin(true)}
+          disabled={disabled}
+          className="rounded-xl btn-glow-purple py-4 font-semibold text-white disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none"
         >
           Join Room
         </button>
       </div>
 
       <button
-        onClick={() => doWhenConnected(() => autoMatch("CLASSIC"))}
-        className="w-full rounded-xl border border-gray-700 bg-gray-900 py-4 font-medium text-gray-300 hover:bg-gray-800 hover:text-white transition-all"
+        onClick={() => autoMatch("CLASSIC")}
+        disabled={disabled}
+        className="w-full rounded-xl glass glass-hover py-4 font-medium text-white/70 hover:text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
       >
         Play Random Opponent
       </button>

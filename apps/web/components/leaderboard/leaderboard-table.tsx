@@ -16,18 +16,23 @@ export function LeaderboardTable() {
   }, []);
 
   if (loading) {
-    return <div className="text-center text-gray-400 py-12">Loading leaderboard...</div>;
+    return (
+      <div className="text-center text-white/30 py-12">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/10 border-t-indigo-400 mx-auto mb-3" />
+        Loading leaderboard...
+      </div>
+    );
   }
 
   if (entries.length === 0) {
-    return <div className="text-center text-gray-400 py-12">No players yet</div>;
+    return <div className="text-center text-white/30 py-12">No players yet</div>;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left">
         <thead>
-          <tr className="border-b border-gray-800 text-sm text-gray-400">
+          <tr className="border-b border-white/[0.06] text-sm text-white/30">
             <th className="py-3 px-4">#</th>
             <th className="py-3 px-4">Player</th>
             <th className="py-3 px-4 text-right">Rating</th>
@@ -38,31 +43,31 @@ export function LeaderboardTable() {
         </thead>
         <tbody>
           {entries.map((entry) => (
-            <tr key={entry.userId} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+            <tr key={entry.userId} className="border-b border-white/[0.04] hover:bg-white/[0.03] transition-colors">
               <td className="py-3 px-4">
                 <span className={`font-bold ${
-                  entry.rank === 1 ? "text-yellow-400" :
+                  entry.rank === 1 ? "text-amber-400 drop-shadow-[0_0_6px_rgba(251,191,36,0.4)]" :
                   entry.rank === 2 ? "text-gray-300" :
                   entry.rank === 3 ? "text-orange-400" :
-                  "text-gray-500"
+                  "text-white/25"
                 }`}>
                   {entry.rank}
                 </span>
               </td>
               <td className="py-3 px-4 font-medium text-white">{entry.name}</td>
               <td className="py-3 px-4 text-right font-mono text-emerald-400">{entry.rating}</td>
-              <td className="py-3 px-4 text-right text-sm text-gray-300">
+              <td className="py-3 px-4 text-right text-sm text-white/60">
                 <span className="text-emerald-400">{entry.wins}</span>
                 {" / "}
-                <span className="text-red-400">{entry.losses}</span>
+                <span className="text-rose-400">{entry.losses}</span>
                 {" / "}
-                <span className="text-gray-400">{entry.draws}</span>
+                <span className="text-white/30">{entry.draws}</span>
               </td>
               <td className="py-3 px-4 text-right text-sm">
-                <span className="text-orange-400">{entry.currentStreak}</span>
-                <span className="text-gray-600"> / {entry.maxStreak}</span>
+                <span className="text-amber-400">{entry.currentStreak}</span>
+                <span className="text-white/15"> / {entry.maxStreak}</span>
               </td>
-              <td className="py-3 px-4 text-right text-sm text-gray-400">{entry.gamesPlayed}</td>
+              <td className="py-3 px-4 text-right text-sm text-white/30">{entry.gamesPlayed}</td>
             </tr>
           ))}
         </tbody>

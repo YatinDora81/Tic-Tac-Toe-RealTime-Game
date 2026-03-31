@@ -8,8 +8,8 @@ export default function LeaderboardPage() {
     <div className="min-h-screen">
       <Navbar />
       <main className="mx-auto max-w-3xl px-4 py-8">
-        <h1 className="text-2xl font-bold mb-6">Leaderboard</h1>
-        <div className="rounded-xl bg-gray-900 border border-gray-800 overflow-hidden">
+        <h1 className="text-2xl font-bold mb-6 text-gradient">Leaderboard</h1>
+        <div className="rounded-xl glass-strong overflow-hidden">
           <LeaderboardTable />
         </div>
       </main>

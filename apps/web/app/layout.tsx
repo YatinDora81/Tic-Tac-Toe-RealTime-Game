@@ -24,9 +24,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-gray-950 text-white min-h-screen antialiased`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} text-white min-h-screen antialiased`}>
+        <div className="bg-mesh" />
+        <div className="bg-orb-3" />
         <AppProviders>
-          {children}
+          <div className="relative z-10">
+            {children}
+          </div>
         </AppProviders>
       </body>
     </html>

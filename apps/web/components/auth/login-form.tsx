@@ -26,25 +26,25 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-1.5">Email</label>
+        <label className="block text-sm font-medium text-white/40 mb-1.5">Email</label>
         <input
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          className="w-full rounded-xl bg-gray-800/80 px-4 py-3 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all placeholder:text-gray-600"
+          className="w-full rounded-xl glass-input px-4 py-3 text-white focus:outline-none placeholder:text-white/20"
           placeholder="you@example.com"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-400 mb-1.5">Password</label>
+        <label className="block text-sm font-medium text-white/40 mb-1.5">Password</label>
         <input
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={6}
-          className="w-full rounded-xl bg-gray-800/80 px-4 py-3 text-white border border-gray-700 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 focus:outline-none transition-all placeholder:text-gray-600"
+          className="w-full rounded-xl glass-input px-4 py-3 text-white focus:outline-none placeholder:text-white/20"
           placeholder="Min 6 characters"
         />
       </div>
@@ -52,7 +52,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-xl bg-blue-600 py-3 font-semibold text-white hover:bg-blue-500 transition-all disabled:opacity-50 shadow-lg shadow-blue-600/20"
+        className="w-full rounded-xl btn-glow-blue py-3 font-semibold text-white disabled:opacity-50"
       >
         {loading ? "Signing in..." : "Sign In"}
       </button>
