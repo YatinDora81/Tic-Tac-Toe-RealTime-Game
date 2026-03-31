@@ -98,7 +98,6 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
         case "game_over":
           setGameOver(message.data);
-          setGameState(null);
           break;
 
         case "timer_update":

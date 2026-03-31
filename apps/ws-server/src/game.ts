@@ -45,6 +45,13 @@ interface UserSession {
   waitingForMode: GameMode | null;
 }
 
+interface GameOverPayload {
+  result: GameResult;
+  winnerId: string | null;
+  board: number[];
+  stats: { playerX: any; playerO: any };
+}
+
 interface Room {
   roomCode: string;
   gameId: string;
@@ -60,6 +67,7 @@ interface Room {
     timeout: ReturnType<typeof setTimeout>;
   } | null;
   forfeitTimers: Map<string, ReturnType<typeof setTimeout>>;
+  gameOverData: GameOverPayload | null;
 }
 
 class Game {
@@ -160,6 +168,7 @@ class Game {
       moveCount: 0,
       turnTimer: null,
       forfeitTimers: new Map(),
+      gameOverData: null,
     };
   }
 
@@ -333,6 +342,9 @@ class Game {
         });
       }
       this.sendToUser(key, this.buildGameState(room));
+      if (room.status === "COMPLETED" && room.gameOverData) {
+        this.sendToUser(key, { type: "game_over", data: room.gameOverData });
+      }
       return;
     }
 
@@ -515,14 +527,16 @@ class Game {
           }
         : null;
 
+    room.gameOverData = {
+      result,
+      winnerId: resolvedWinnerId,
+      board: [...room.board] as number[],
+      stats: { playerX: fmt(xStats), playerO: fmt(oStats) },
+    };
+
     this.broadcastToRoom(room, {
       type: "game_over",
-      data: {
-        result,
-        winnerId: resolvedWinnerId,
-        board: [...room.board] as number[],
-        stats: { playerX: fmt(xStats), playerO: fmt(oStats) },
-      },
+      data: room.gameOverData,
     });
 
     setTimeout(() => this.cleanup(room), 5000);
@@ -549,6 +563,9 @@ class Game {
     }
 
     this.sendToSocket(socket, this.buildGameState(room));
+    if (room.status === "COMPLETED" && room.gameOverData) {
+      this.sendToSocket(socket, { type: "game_over", data: room.gameOverData });
+    }
     const isX = this.playerKey(room.playerX) === key;
     const opponentKey = isX
       ? room.playerO
