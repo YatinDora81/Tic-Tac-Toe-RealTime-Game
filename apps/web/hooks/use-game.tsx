@@ -76,10 +76,9 @@ export function GameProvider({ children }: { children: ReactNode }) {
           const state = message.data;
           setGameState(state);
           setRoomCode((prev) => prev ?? state.roomCode ?? null);
-          // Derive mySymbol from game_state if not already set
+          // Derive mySymbol from game_state (always re-derive to avoid stale symbol from previous game)
           if (user) {
             setMySymbol((prev) => {
-              if (prev) return prev;
               if (state.playerX?.userId === user.id) return "X";
               if (state.playerO?.userId === user.id) return "O";
               return prev;

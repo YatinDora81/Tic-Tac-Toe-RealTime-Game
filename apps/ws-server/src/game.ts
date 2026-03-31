@@ -416,7 +416,7 @@ class Game {
     if (room.mode === "TIMED") this.startTurnTimer(room);
   }
 
-  private async endGame(room: Room, result: GameResult) {
+  private async endGame(room: Room, result: GameResult, forfeitedById?: string) {
     if (!room.playerO) return;
 
     room.status = "COMPLETED";
@@ -454,10 +454,16 @@ class Game {
             );
         }
       } else {
-        const xWins =
-          result === "X_WIN" ||
-          ((result === "FORFEIT" || result === "TIMEOUT") &&
-            room.currentTurn === "O");
+        let xWins: boolean;
+        if (result === "FORFEIT" && forfeitedById) {
+          // The player who forfeited loses — the other wins
+          xWins = room.playerX.id !== forfeitedById;
+        } else {
+          xWins =
+            result === "X_WIN" ||
+            ((result === "FORFEIT" || result === "TIMEOUT") &&
+              room.currentTurn === "O");
+        }
         resolvedWinnerId = xWins ? room.playerX.id : room.playerO.id;
         const winnerId = resolvedWinnerId;
         const loserId = xWins ? room.playerO.id : room.playerX.id;
@@ -600,7 +606,7 @@ class Game {
 
     const forfeitTimer = setTimeout(async () => {
       room.forfeitTimers.delete(key);
-      if (room.status === "IN_PROGRESS") await this.endGame(room, "FORFEIT");
+      if (room.status === "IN_PROGRESS") await this.endGame(room, "FORFEIT", userId);
     }, DISCONNECT_GRACE_PERIOD_MS);
     room.forfeitTimers.set(key, forfeitTimer);
   }
@@ -701,7 +707,7 @@ class Game {
     const room = this.rooms.get(session.roomCode);
     if (!room) return;
 
-    if (room.status === "IN_PROGRESS") await this.endGame(room, "FORFEIT");
+    if (room.status === "IN_PROGRESS") await this.endGame(room, "FORFEIT", userId);
     else this.cleanup(room);
   }
 }
