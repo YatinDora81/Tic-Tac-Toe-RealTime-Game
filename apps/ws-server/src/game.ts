@@ -285,7 +285,62 @@ class Game {
       }
 
       if (dbGame.status === "COMPLETED" || dbGame.status === "ABANDONED") {
-        this.sendToUser(key, { type: "error", data: { message: "Game already ended" } });
+        // Reconstruct board from persisted moves and send completed game state
+        const xEntry = dbGame.players.find((p) => p.symbol === "X");
+        const oEntry = dbGame.players.find((p) => p.symbol === "O");
+        if (!xEntry) { this.sendToUser(key, { type: "error", data: { message: "Game data corrupted" } }); return; }
+
+        const xIsGuest = !!xEntry.guestId;
+        const xId = xIsGuest ? xEntry.guestId! : xEntry.userId!;
+        const xName = xIsGuest ? xEntry.guest!.name : xEntry.user!.name;
+        const oIsGuest = oEntry ? !!oEntry.guestId : false;
+        const oId = oEntry ? (oIsGuest ? oEntry.guestId! : oEntry.userId!) : null;
+        const oName = oEntry ? (oIsGuest ? oEntry.guest!.name : oEntry.user!.name) : null;
+
+        const board = createEmptyBoard();
+        for (const move of dbGame.moves) {
+          board[move.position] = move.symbol === "X" ? 1 : 0;
+        }
+
+        let winnerId: string | null = null;
+        const result = dbGame.result as GameResult | null;
+        if (result === "X_WIN") winnerId = xId;
+        else if (result === "O_WIN") winnerId = oId;
+        else if (result === "TIMEOUT" && dbGame.moves.length > 0) {
+          const lastMove = dbGame.moves[dbGame.moves.length - 1]!;
+          winnerId = lastMove.symbol === "X" ? xId : oId;
+        } else if (result === "FORFEIT") {
+          const win = checkWinner(board);
+          if (win.winner === "X") winnerId = xId;
+          else if (win.winner === "O") winnerId = oId;
+        }
+
+        this.sendToUser(key, {
+          type: "game_state",
+          data: {
+            roomCode,
+            board: [...board],
+            currentTurn: "X",
+            playerX: { userId: xId, name: xName, symbol: "X", isGuest: xIsGuest },
+            playerO: oId && oName ? { userId: oId, name: oName, symbol: "O", isGuest: oIsGuest } : null,
+            status: dbGame.status,
+            mode: dbGame.mode,
+            result: result ?? null,
+            moveCount: dbGame.moves.length,
+          },
+        });
+
+        if (result) {
+          this.sendToUser(key, {
+            type: "game_over",
+            data: {
+              result,
+              winnerId,
+              board: [...board] as number[],
+              stats: { playerX: null, playerO: null },
+            },
+          });
+        }
         return;
       }
 

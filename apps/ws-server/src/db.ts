@@ -27,6 +27,7 @@ export async function findGameByRoomCode(roomCode: string) {
           guest: { select: { id: true, name: true } },
         },
       },
+      moves: { orderBy: { moveNumber: "asc" } },
     },
   });
 }
